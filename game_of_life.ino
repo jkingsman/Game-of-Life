@@ -53,7 +53,7 @@
 #define MAX_GENERATION_COUNT 60000 // failsafe fallback -- board will always reset after this many gens. 10min = 600s; 600s / .01s delelay = 60_000 gens at fastest speed (100mins at slowest, eh.)
 
 // color config
-#define RANDOM_COLOR_SCHEME 1 // 0 = always use first scheme, 1 = random selection
+#define COLOR_SCHEME -1       // -1 = random color scheme, other number = use the nth color scheme in the array (0 indexed)
 #define NUM_COLOR_SCHEMES 6   // must match number of schemes in COLOR_SCHEMES array
 
 // bitpacked board access macros -- why store HEIGHT * WIDTH values when we can just store HEIGHT * WIDTH bits?
@@ -314,10 +314,11 @@ void initialize_fresh_board(game_state_t *state) {
   delay(100);
 
   // new colors & frame delay
-  if (RANDOM_COLOR_SCHEME) {
+  if (COLOR_SCHEME == -1) {
     state->current_color_scheme = random(NUM_COLOR_SCHEMES);
   } else {
-    state->current_color_scheme = 0;
+    // do some bounding because we're nice like that
+    state->current_color_scheme = COLOR_SCHEME % NUM_COLOR_SCHEMES;
   }
   state->frame_delay = random(FRAME_DELAY_MIN, FRAME_DELAY_MAX + 1);
 
