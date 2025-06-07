@@ -33,6 +33,22 @@
 #define LAT 12
 #define OE 13
 
+// definitions for Adafruit Matrix Portal S3
+// #define R1 42
+// #define G1 41
+// #define B1 40
+// #define R2 38
+// #define G2 39
+// #define B2 37
+// #define A 45
+// #define B 36
+// #define C 48
+// #define D 35
+// #define E 21
+// #define CLK 2
+// #define LAT 47
+// #define OE 14
+
 // display dimensions
 #define DISPLAY_WIDTH 64 // physical width of rgb matrix display for driver setup
 
