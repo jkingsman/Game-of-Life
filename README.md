@@ -4,7 +4,7 @@ This is the code (in `game_of_life.ino`) for an LED matrix to display Conway's g
 
 This was tested and dev'd using Adafruit Protomatter 1.7.0 and Philhower core ([installation instructios](https://learn.adafruit.com/rp2040-arduino-with-the-earlephilhower-core/installing-the-earlephilhower-core)) for RPi Pico 4.5.4 via Arduino IDE. The hardware is a Seengreat RGB Matrix adapter (https://www.amazon.com/dp/B0BC8Y447G) and Waveshare RGB-Matrix-P2.5-64x64 (https://www.amazon.com/dp/B0BQYFRVTR) with a 5V3A USBC PD adapter for power, although broadly this code should be trivially adaptable to any board that can use Protomatter to write pixels out, and not-trivially-but-still-fairly-easily adapted to other output systems -- I've worked hard to keep the code readable.
 
-Also confirmed with the [Adafruit 64x64 RGB LED Matrix](https://www.adafruit.com/product/3649) and their [Matrix Portal S3](https://www.adafruit.com/product/5778) using the alternate pinouts in the `.ino` file.
+Also confirmed with the [Adafruit 64x64 RGB LED Matrix](https://www.adafruit.com/product/3649) and their [Matrix Portal S3](https://www.adafruit.com/product/5778). If you're using the Matrix Portal S3, you should use `game_of_life_with_controls_matrixportals3.ino` which uses the buttons on the board to customize color scheme and speed and has the correct pinouts predefined.
 
 For the RP2040 (RPi Pico), I needed to underclock CPU to ~100MHz for stability (YMMV; some RP2040s ran happily at 200, others terribly).
 

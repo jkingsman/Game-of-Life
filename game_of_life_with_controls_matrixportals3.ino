@@ -1,5 +1,6 @@
 // clang-format off
 #include <Adafruit_Protomatter.h>
+#include <Fonts/FreeSansBold9pt7b.h>
 
 // serial debugging -- set to 1 to enable debug output
 // note that this sends some messages at critical times esp. during stagnancy detetction,
@@ -17,21 +18,25 @@
   #define DEBUG_PRINTF(fmt, ...)
 #endif
 
-// seengreat rgb matrix adapter with rpi pico matrix pin definitions
-#define R1 2
-#define G1 3
-#define B1 4
-#define R2 5
-#define G2 8
-#define B2 9
-#define A 10
-#define B 16
-#define C 18
-#define D 20
-#define E 22
-#define CLK 11
-#define LAT 12
-#define OE 13
+// button definitions
+#define BUTTON_UP 6
+#define BUTTON_DOWN 7
+
+// definitions for Adafruit Matrix Portal S3
+#define R1 42
+#define G1 41
+#define B1 40
+#define R2 38
+#define G2 39
+#define B2 37
+#define A 45
+#define B 36
+#define C 48
+#define D 35
+#define E 21
+#define CLK 2
+#define LAT 47
+#define OE 14
 
 // display dimensions
 #define DISPLAY_WIDTH 64 // physical width of rgb matrix display for driver setup
@@ -52,8 +57,10 @@
 #define POP_PATTERN_LENGTH 8       // check for repeating patterns of this length in population history to mark board as stagnant
 #define MAX_GENERATION_COUNT 60000 // failsafe fallback -- board will always reset after this many gens. 10min = 600s; 600s / .01s delelay = 60_000 gens at fastest speed (100mins at slowest, eh.)
 
+// button debounce
+#define DEBOUNCE_DELAY 200  // ms
+
 // color config
-#define COLOR_SCHEME -1       // -1 = random color scheme, other number = use the nth color scheme in the array (0 indexed)
 #define NUM_COLOR_SCHEMES 6   // must match number of schemes in COLOR_SCHEMES array
 
 // bitpacked board access macros -- why store HEIGHT * WIDTH values when we can just store HEIGHT * WIDTH bits?
@@ -137,6 +144,22 @@ const uint16_t COLOR_SCHEMES[NUM_COLOR_SCHEMES][FADE_LEVELS] = {
     color565(255, 0, 255)}
   };
 
+// Color scheme names for display
+const char* COLOR_SCHEME_NAMES[NUM_COLOR_SCHEMES + 1] = {
+  "RGB",
+  "SNST",
+  "H2O",
+  "FIRE",
+  "MTRX",
+  "NEON",
+  "RAND"
+};
+
+// Speed options
+const int SPEED_OPTIONS[] = {10, 40, 70, 100, -1}; // -1 = random
+const char* SPEED_NAMES[] = {"10ms", "40ms", "70ms", "100ms", "RAND"};
+const int NUM_SPEED_OPTIONS = 5;
+
 typedef unsigned char cell_buffer_t;
 
 typedef struct
@@ -158,6 +181,13 @@ typedef struct
   uint16_t population_history[POP_HISTORY_SIZE];
   int pop_history_index;
   int pop_stagnant_count;
+
+  // button settings
+  int color_scheme_setting; // 0-5 = specific scheme, 6 = random
+  int speed_setting; // 0-3 = specific speed, 4 = random
+  unsigned long last_button_press;
+  bool showing_message;
+  unsigned long message_start_time;
 } game_state_t;
 
 void update_board(const cell_buffer_t *current, cell_buffer_t *next);
@@ -166,6 +196,8 @@ int check_stagnancy(game_state_t *state);
 void initialize_fresh_board(game_state_t *state);
 uint16_t count_population(const cell_buffer_t *board);
 int check_population_pattern(game_state_t *state);
+void handle_buttons(game_state_t *state);
+void show_message(const char* message);
 
 // hardware setup
 uint8_t rgbPins[] = {R1, G1, B1, R2, G2, B2};
@@ -184,6 +216,68 @@ static const int mn_x[] = {-1, 0, 1, -1, 1, -1, 0, 1};
 static const int mn_y[] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
 // clang-format on
+
+// Show a message on the matrix
+void show_message(const char* message) {
+  matrix.fillScreen(0);
+  matrix.setFont(&FreeSansBold9pt7b);
+  matrix.setTextWrap(false);
+  matrix.setTextSize(1);
+
+  // Calculate text bounds to center it
+  int16_t x1, y1;
+  uint16_t w, h;
+  matrix.getTextBounds(message, 0, 0, &x1, &y1, &w, &h);
+
+  // Center the text
+  int x = (DISPLAY_WIDTH - w) / 2;
+  int y = (BOARD_HEIGHT + h) / 2;
+
+  // Use a bright color from the current scheme
+  matrix.setTextColor(COLOR_SCHEMES[game.current_color_scheme % NUM_COLOR_SCHEMES][FADE_LEVELS-1]);
+  matrix.setCursor(x, y);
+  matrix.println(message);
+  matrix.show();
+
+  game.showing_message = true;
+  game.message_start_time = millis();
+}
+
+// Handle button presses
+void handle_buttons(game_state_t *state) {
+  unsigned long currentTime = millis();
+
+  // Check if we're still showing a message
+  if (state->showing_message) {
+    if (currentTime - state->message_start_time > 2000) { // Show message for 2 seconds
+      state->showing_message = false;
+      matrix.setFont(); // Reset to default font
+      initialize_fresh_board(state);
+    }
+    return; // Don't process buttons while showing message
+  }
+
+  // Debounce check
+  if (currentTime - state->last_button_press < DEBOUNCE_DELAY) {
+    return;
+  }
+
+  // Check up button (color scheme)
+  if (digitalRead(BUTTON_UP) == LOW) {
+    state->last_button_press = currentTime;
+    state->color_scheme_setting = (state->color_scheme_setting + 1) % (NUM_COLOR_SCHEMES + 1);
+    DEBUG_PRINTF("Color scheme setting: %d\n", state->color_scheme_setting);
+    show_message(COLOR_SCHEME_NAMES[state->color_scheme_setting]);
+  }
+
+  // Check down button (speed)
+  if (digitalRead(BUTTON_DOWN) == LOW) {
+    state->last_button_press = currentTime;
+    state->speed_setting = (state->speed_setting + 1) % NUM_SPEED_OPTIONS;
+    DEBUG_PRINTF("Speed setting: %d\n", state->speed_setting);
+    show_message(SPEED_NAMES[state->speed_setting]);
+  }
+}
 
 // count the number of living cells on the board
 uint16_t count_population(const cell_buffer_t *board) {
@@ -313,14 +407,19 @@ void initialize_fresh_board(game_state_t *state) {
   matrix.show();
   delay(100);
 
-  // new colors & frame delay
-  if (COLOR_SCHEME == -1) {
+  // Set color scheme based on button setting
+  if (state->color_scheme_setting == NUM_COLOR_SCHEMES) { // Random
     state->current_color_scheme = random(NUM_COLOR_SCHEMES);
   } else {
-    // do some bounding because we're nice like that
-    state->current_color_scheme = COLOR_SCHEME % NUM_COLOR_SCHEMES;
+    state->current_color_scheme = state->color_scheme_setting;
   }
-  state->frame_delay = random(FRAME_DELAY_MIN, FRAME_DELAY_MAX + 1);
+
+  // Set frame delay based on button setting
+  if (state->speed_setting == NUM_SPEED_OPTIONS - 1) { // Random
+    state->frame_delay = random(FRAME_DELAY_MIN, FRAME_DELAY_MAX + 1);
+  } else {
+    state->frame_delay = SPEED_OPTIONS[state->speed_setting];
+  }
 
   DEBUG_PRINTF("New game: Color scheme %d, Frame delay: %dms\n",
                state->current_color_scheme, state->frame_delay);
@@ -368,6 +467,10 @@ void setup(void) {
   DEBUG_INIT();
   DEBUG_PRINTLN("Conway's Game of Life starting up...");
 
+  // Initialize buttons with pull-up since pressing pulls them low
+  pinMode(BUTTON_UP, INPUT_PULLUP);
+  pinMode(BUTTON_DOWN, INPUT_PULLUP);
+
   ProtomatterStatus status = matrix.begin();
 
   if (status != PROTOMATTER_OK) {
@@ -402,6 +505,13 @@ void setup(void) {
   game.pop_history_index = 0;
   game.pop_stagnant_count = 0;
 
+  // Initialize button settings
+  game.color_scheme_setting = NUM_COLOR_SCHEMES; // Start with random
+  game.speed_setting = NUM_SPEED_OPTIONS - 1; // Start with random
+  game.last_button_press = 0;
+  game.showing_message = false;
+  game.message_start_time = 0;
+
   if (!game.current || !game.next) {
     DEBUG_PRINTLN("Failure to allocate the game -- crashing out!");
     for (;;)
@@ -422,6 +532,14 @@ void setup(void) {
 
 void loop(void) {
   unsigned long currentTime = millis();
+
+  // Always check buttons
+  handle_buttons(&game);
+
+  // Don't update game while showing message
+  if (game.showing_message) {
+    return;
+  }
 
   // cool kids don't hang their processors with delay()
   if (currentTime - lastUpdate >= game.frame_delay) {
