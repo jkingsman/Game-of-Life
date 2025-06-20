@@ -89,7 +89,7 @@ static inline uint16_t color565(uint8_t red, uint8_t green, uint8_t blue)
 
 // color schemes with fade trails
 const uint16_t COLOR_SCHEMES[NUM_COLOR_SCHEMES][FADE_LEVELS] = {
-    // blue → green → red
+  // blue → green → red
   {
     color565(0, 0, 0),
     color565(0, 0, 8), color565(0, 0, 8), color565(0, 0, 8),
@@ -103,14 +103,6 @@ const uint16_t COLOR_SCHEMES[NUM_COLOR_SCHEMES][FADE_LEVELS] = {
     color565(16, 0, 16), color565(32, 0, 32), color565(64, 0, 48),
     color565(128, 32, 0), color565(192, 64, 0), color565(255, 128, 0),
     color565(255, 255, 0)
-  },
-
-  // ocean: dark blue → cyan → white
-  {
-    color565(0, 0, 0),
-    color565(0, 0, 16), color565(0, 0, 32), color565(0, 16, 64),
-    color565(0, 64, 128), color565(0, 128, 192), color565(0, 192, 255),
-    color565(255, 255, 255)
   },
 
   // fire: dark red → orange → yellow
@@ -129,13 +121,94 @@ const uint16_t COLOR_SCHEMES[NUM_COLOR_SCHEMES][FADE_LEVELS] = {
     color565(0, 255, 0)
   },
 
-  // neon: magenta → cyan → white
+  // Cyberpunk: hot pink → electric blue → lime green
   {
     color565(0, 0, 0),
-    color565(16, 0, 16), color565(32, 0, 32), color565(64, 0, 64),
-    color565(64, 64, 128), color565(0, 128, 192), color565(0, 192, 255),
-    color565(255, 0, 255)}
-  };
+    color565(64, 0, 32), color565(128, 0, 64), color565(255, 0, 128),
+    color565(128, 64, 255), color565(0, 128, 255), color565(0, 255, 128),
+    color565(128, 255, 0)
+  },
+
+  // Autumn: crimson → burnt orange → golden yellow → teal
+  {
+    color565(0, 0, 0),
+    color565(128, 0, 32), color565(192, 0, 48), color565(255, 64, 0),
+    color565(255, 128, 0), color565(255, 192, 0), color565(192, 224, 64),
+    color565(0, 192, 192)
+  },
+
+  // Prism: red → green → blue → yellow → magenta
+  {
+    color565(0, 0, 0),
+    color565(128, 0, 0), color565(255, 0, 0), color565(128, 128, 0),
+    color565(0, 255, 0), color565(0, 128, 128), color565(0, 0, 255),
+    color565(255, 255, 0)
+  },
+
+  // Aurora: deep purple → pink → yellow
+  {
+    color565(0, 0, 0),
+    color565(32, 0, 48), color565(64, 0, 96), color565(96, 16, 128),
+    color565(192, 32, 128), color565(255, 64, 128), color565(255, 128, 192),
+    color565(255, 255, 128)
+  },
+
+  // Toxic: black → toxic green → lime
+  {
+    color565(0, 0, 0),
+    color565(0, 16, 0), color565(16, 32, 0), color565(32, 64, 0),
+    color565(64, 128, 0), color565(128, 192, 0), color565(192, 255, 0),
+    color565(224, 255, 32)
+  },
+
+  // Deep Sea: black → deep blue → turquoise
+  {
+    color565(0, 0, 0),
+    color565(0, 0, 32), color565(0, 16, 64), color565(0, 32, 96),
+    color565(0, 64, 128), color565(0, 128, 160), color565(32, 192, 192),
+    color565(64, 255, 224)
+  },
+
+  // Candy: dark pink → hot pink → white
+  {
+    color565(0, 0, 0),
+    color565(32, 0, 16), color565(64, 0, 32), color565(128, 16, 64),
+    color565(192, 32, 96), color565(255, 64, 128), color565(255, 128, 192),
+    color565(255, 224, 255)
+  },
+
+  // Stark white -- off -> white
+  {
+    color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(255, 255, 255)
+  },
+
+  // Stark red -- off -> red
+  {
+    color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(255, 0, 0)
+  },
+
+  // Stark green -- off -> green
+  {
+    color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(0, 255, 0)
+  },
+
+  // Stark blue -- off -> blue
+  {
+    color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(0, 0, 0), color565(0, 0, 0), color565(0, 0, 0),
+    color565(0, 0, 255)
+  }
+};
 
 typedef unsigned char cell_buffer_t;
 
