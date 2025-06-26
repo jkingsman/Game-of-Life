@@ -54,7 +54,7 @@
 
 // color config
 #define COLOR_SCHEME -1       // -1 = random color scheme, other number = use the nth color scheme in the array (0 indexed)
-#define NUM_COLOR_SCHEMES 6   // must match number of schemes in COLOR_SCHEMES array
+#define NUM_COLOR_SCHEMES 15   // must match number of schemes in COLOR_SCHEMES array
 
 // bitpacked board access macros -- why store HEIGHT * WIDTH values when we can just store HEIGHT * WIDTH bits?
 // +7 means we always round in the generous direction when determining how many bytes we need to pack the board

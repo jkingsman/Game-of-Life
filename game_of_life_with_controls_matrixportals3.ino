@@ -61,7 +61,7 @@
 #define DEBOUNCE_DELAY 200  // ms
 
 // color config
-#define NUM_COLOR_SCHEMES 16   // must match number of schemes in COLOR_SCHEMES array
+#define NUM_COLOR_SCHEMES 15   // must match number of schemes in COLOR_SCHEMES array
 
 // bitpacked board access macros -- why store HEIGHT * WIDTH values when we can just store HEIGHT * WIDTH bits?
 // +7 means we always round in the generous direction when determining how many bytes we need to pack the board
